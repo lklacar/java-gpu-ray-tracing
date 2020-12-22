@@ -20,6 +20,7 @@ public class Raytracer extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public void create() {
+        Gdx.input.setCursorCatched(true);
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
 
@@ -85,7 +86,7 @@ public class Raytracer extends ApplicationAdapter implements InputProcessor {
 
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
-        mouse.set(screenX, height - screenY);
+        mouse.set(screenX, 1 - screenY);
         return false;
     }
 

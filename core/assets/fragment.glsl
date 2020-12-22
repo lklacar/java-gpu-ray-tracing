@@ -224,6 +224,23 @@ vec3 Uncharted2ToneMapping(vec3 color)
 }
 
 
+mat4 rotationMatrix(vec3 axis, float angle) {
+    axis = normalize(axis);
+    float s = sin(angle);
+    float c = cos(angle);
+    float oc = 1.0 - c;
+
+    return mat4(oc * axis.x * axis.x + c, oc * axis.x * axis.y - axis.z * s, oc * axis.z * axis.x + axis.y * s, 0.0,
+    oc * axis.x * axis.y + axis.z * s, oc * axis.y * axis.y + c, oc * axis.y * axis.z - axis.x * s, 0.0,
+    oc * axis.z * axis.x - axis.y * s, oc * axis.y * axis.z + axis.x * s, oc * axis.z * axis.z + c, 0.0,
+    0.0, 0.0, 0.0, 1.0);
+}
+
+vec3 rotate(vec3 v, vec3 axis, float angle) {
+    mat4 m = rotationMatrix(axis, angle);
+    return (m * vec4(v, 1.0)).xyz;
+}
+
 void main()
 {
     vec2 uv = 2. * gl_FragCoord.xy / resolution.xy - 1.;
@@ -239,11 +256,17 @@ void main()
     vec3 color = vec3(0.);
     for (int i = 0; i < 4; ++i)
     {
-        vec3 p0 = vec3(0., 1.1, 4.);
-        vec3 p = vec3((2. * (mouse.xy==vec2(0.)?.5*resolution.xy:mouse.xy) / resolution.xy - 1.) * vec2(1., 1.), 0.) + p0;
+        vec3 initialPosition = vec3(0., 1.1, 4.);
+
+        vec3 position = vec3((2. * (mouse.xy==vec2(0.)?.5*resolution.xy:mouse.xy) / resolution.xy - 1.) * vec2(1., 1.), 0.) + initialPosition;
+        position = initialPosition;
+
         vec3 offset = vec3(msaa[i] / resolution.y, 0.);
-        vec3 d = normalize(vec3(resolution.x/resolution.y * uv.x, uv.y, -1.5) + offset);
-        Ray r = Ray(p, d);
+        vec3 direction = normalize(vec3(resolution.x/resolution.y * uv.x, uv.y + mouse.y / 100., -1.5) + offset);
+        direction = rotate(direction, vec3(0, 1, 0), mouse.x / 500.);
+
+
+        Ray r = Ray(position, direction);
         color += radiance(r) / 4.;
     }
 
